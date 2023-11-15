@@ -1,24 +1,24 @@
 import re
-# from models import *
+from models import *
 
 class Menu:
-    def __init__(self, schedule: str):
-        self.schedule = schedule
+    def __init__(self, group_name: str):
+        if not Group.select().where(name=group_name):
+            self.group = Group.create(
+                name=group_name
+            )
+        else:
+            self.group = Group.get(name=group_name)
+        
 
-    # def __init__(self, group_name: str):
-    #     if not Group.select().where(name=group_name):
-    #         self.group = Group.create(
-    #             name=group_name,
+    def add_student(self, nickname: str, role: str):
+        if not Student.select().where(nickname=nickname):
+            student = Student.create(
+                nickname=nickname,
+                role=role,
+            )
+        
 
-    #         )
-
-    # def add_student(self, nickname: str, role: str):
-    #     if not Student.select().where(nickname=nickname):
-    #         Student.create(
-    #             nickname=nickname,
-    #             role=role,
-    #             Group=self.group
-    #         )
 
     def parse_schedule(self, text: str):
         self.schedule = {}

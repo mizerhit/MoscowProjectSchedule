@@ -23,14 +23,7 @@ class Group(BaseModel):
         db_table = 'Groups'
 
     name = CharField(unique=True)
-    # schedule = ForeignKeyField('Schedule', unique=True, blank=True, backref='schedule')
-    schedule = CharField()
-    homeworks = ForeignKeyField('Homework', blank=True)
-
-
-# class Schedule(BaseModel):
-#     class Meta:
-#         db_table = 'Schedules'
+    schedule = CharField(black=True)
 
 
 class Subject(BaseModel):
@@ -41,5 +34,12 @@ class Subject(BaseModel):
     week_day = CharField()
     auditorium = CharField()
     group = ForeignKeyField('Group')
-    homework = CharField()
+
+
+class Homework(BaseModel):
+    class Meta:
+        db_table = 'Homeworks'
+    
+    text = CharField()
     deadline = DateTimeField()
+    subject = ForeignKeyField('Subject', backref='homework')
