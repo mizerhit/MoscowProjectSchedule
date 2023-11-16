@@ -1,4 +1,5 @@
 import re
+from datetime import datetime, time
 from models import *
 
 class Menu:
@@ -12,35 +13,47 @@ class Menu:
         
 
     def add_student(self, nickname: str, role: str):
-        if not Student.select().where(nickname=nickname):
+        try:
+            student = Student.get(nickname=nickname)
+        except Student.DoesNotExists:
+            student = None
+        if not student:
             student = Student.create(
                 nickname=nickname,
                 role=role,
             )
-        
+        if not student in self.group.students:
+            self.group.students.add(student)
 
 
-    def parse_schedule(self, text: str):
-        self.schedule = {}
+    def parse_schedule(self, input_schedule: str):
+        schedule = {}
         current_day = None
         pattern = re.compile(r'(\w+):$|([\w\s]+), (\d+), (\d+\.\d+);')
 
-        for line in text.split('\n'):
+        for line in input_schedule.split('\n'):
             match = pattern.match(line)
             if match:
                 # если строка день недели
                 if match.group(1):
                     current_day = match.group(1)
-                    self.schedule[current_day] = []
+                    schedule[current_day] = []
                 # если строка инфа о предмете                    
                 elif match.group(2):
                     subject = match.group(2)
                     auditorium = int(match.group(3))
                     time = float(match.group(4))
-                    self.schedule[current_day].append([subject, auditorium, time])
+                    Subject.create(
+                        name=subject,
+                        week_day=current_day,
+                        auditorium=auditorium,
+                        group=self.group
+                    )
+                    schedule[current_day].append([subject, auditorium, time])
+        return schedule
     
-    def format_schedule(self, group: str) -> str:
-        formatted_schedule = f'Расписание для {group}:'
+    def format_schedule(self, schedule):
+        formatted_schedule = f'Расписание для {self.group}:'
 
         for day, subjects in self.schedule.items():
             formatted_schedule += f'\n{day}:\n'
@@ -50,7 +63,13 @@ class Menu:
                 formatted_schedule += formatted_subject
             formatted_schedule += '_' * 30
 
-        return formatted_schedule
+        self.group(schedule=formatted_schedule)
+
+    def __format_deadline(input_time: float):
+        hours, minutes = divmod(int(input_time * 60), 60)
+        converted_time = time(hours, minutes)
+        current_year = datetime.now().year
+        combined_datetime = datetime(current_year, 1, 1, hours, minutes)
     
     def add_homework(self, text: str):
         pattern = re.compile(r'(.+): (\d{4}\.\d{2}\.\d{2});\n(.+)')

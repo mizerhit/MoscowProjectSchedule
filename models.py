@@ -15,7 +15,6 @@ class Student(BaseModel):
 
     nickname = CharField(unique=True)
     role = CharField(max_length='20')
-    Group = ManyToManyField('Group')
 
 
 class Group(BaseModel):
@@ -24,6 +23,7 @@ class Group(BaseModel):
 
     name = CharField(unique=True)
     schedule = CharField(black=True)
+    students = ManyToManyField('Student', backref='groups')
 
 
 class Subject(BaseModel):
@@ -33,6 +33,7 @@ class Subject(BaseModel):
     name = CharField()
     week_day = CharField()
     auditorium = CharField()
+    time=DateTimeField()
     group = ForeignKeyField('Group')
 
 
