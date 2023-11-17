@@ -5,19 +5,8 @@ import models as md
 import re
 # import menu
 
-token = "6398606477:AAEIIC64vT5WqQrgoDnaaIuc6NM_694F3RA"
+token = ""
 bot = telebot.TeleBot(token)
-
-schedule = """
-Физика | 10:00 | B-210
-________________________________________________________________
-Физика | 10:00 | B-210
-________________________________________________________________
-Физика | 10:00 | B-210
-________________________________________________________________
-Физика | 10:00 | B-210 
-"""
-
 
 global menu
 
@@ -57,7 +46,6 @@ def group(message):
     name_group = message.text
     group_pattern = r'^[А-Яа-яЁёA-Za-z]{2,4}[бам]-\d{2}-\d+'
     if re.match(group_pattern, name_group):
-
         bot.send_message(chat_id, 'Вы записались в группу ' +
                          name_group + '!', reply_markup=menu_mark)
         global menu
@@ -112,19 +100,9 @@ def get_text_messages(message):
                             Теория вероянтостей, 300, 16.00;""")
         bot.register_next_step_handler(message, get_schedule)
 
-#    elif message.text == "Выбрать предмет":
-#        bot.send_message(message.from_user.id, "К какому предмету дз? ")
-
-#    elif message.text == "Выберите предмет":
-#        bot.send_message(message.from_user.id, "Введите название предмета")
-#        bot.register_next_step_handler(message, get_subject)
-
     elif message.text == "Просмотр дз":
         bot.send_message(message.from_user.id, menu.show_homework(),
                          reply_markup=menu_mark)
-
-    # elif message.text == "Дз на неделю":
-    #     bot.send_message(message.from_user.id, homework)
 
     elif message.text == "Смена группы":
         bot.send_message(
