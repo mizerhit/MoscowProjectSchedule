@@ -16,7 +16,7 @@ class Menu:
         try:
             student = Student.get(nickname=nickname)
         except Student.DoesNotExist:
-            student = Student.create(
+            student = Student.create(  # Так делать нельзя
                 nickname=nickname,
                 group=self.__group,
             )
@@ -25,8 +25,8 @@ class Menu:
     def add_schedule(self, input_schedule: str):
         schedule = {}
         current_day = None
+        # Комменты к регуляркам нада
         pattern = re.compile(r'(\w+):$|([\w\s]+), (\d+), (\d+\.\d+);')
-
         for line in input_schedule.split('\n'):
             match = pattern.match(line)
             if match:
@@ -83,7 +83,8 @@ class Menu:
         subject = Subject.get(
             name=subject_name, week_day=weekday, group=self.__group)
         time_deadline = subject.time
-        datetime_deadline = datetime.combine(date_deadline.date(), time_deadline)
+        datetime_deadline = datetime.combine(
+            date_deadline.date(), time_deadline)
         try:
             homework = Homework.get(
                 group=self.__group,
@@ -108,7 +109,7 @@ class Menu:
             .join(Group)
             .where(Group.id == self.__group.id)
             .where((Homework.deadline > today) |
-                ((Homework.deadline == today) & (Homework.deadline > datetime.now().time())))
+                   ((Homework.deadline == today) & (Homework.deadline > datetime.now().time())))
             .order_by(Homework.deadline)
         )
 
@@ -120,7 +121,11 @@ class Menu:
             formatted_homeworks.append(f"{subject_name}: {deadline};\n{task}")
 
         return "\n".join(formatted_homeworks)
-    
+
     def show_students(self):
         for student in self.__group.students:
             yield student
+# Сделать не один мега класс, а отдельные по умл и исользовать menu как конекктор
+# Поменять УМЛ
+# Паттерны продумать
+# SOLID
