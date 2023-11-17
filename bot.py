@@ -42,8 +42,37 @@ subject_mark.add(subject_btn2)
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.send_message(message.from_user.id,
-                     "Напиши /help для доп информации", reply_markup=menu_mark)
+    chat_id = message.chat.id
+    msg = bot.send_message(message.from_user.id,
+                           "Привет! Я чат-бот, который поможет тебе не запутаться в твоём расписании и домашней работе. "
+                           "Для начала пройди регистрацию: напиши свою группу АААа-11-1 (  Например, 'ИСИб-22-1')")
+    bot.register_next_step_handler(msg, group)
+
+def group(message):
+    chat_id = message.chat.id
+    name_group = message.text
+    group_pattern = r'^[А-Яа-яЁёA-Za-z]{2,4}[бам]-\d{2}-\d+'
+    if re.match(group_pattern, name_group):
+
+        bot.send_message(chat_id, 'Вы записались в группу ' + name_group + '!')
+        bot.register_next_step_handler(chat_id, status)
+    else:
+        msg = bot.send_message(chat_id, 'Укажите название группы в требуемом формате')
+        bot.register_next_step_handler(msg, group)
+
+def status(chat_id):
+    check_status = types.ReplyKeyboardMarkup()
+    yes = types.KeyboardButton('Да')
+    no = types.KeyboardButton('Нет')
+    check_status.add(yes, no)
+    bot.send_message(chat_id, 'Вы староста?', reply_markup=check_status)
+
+@bot.message_handler(func=lambda message: message.text=="Да")
+def group_captain(massage):
+    #добавить в бд "Captain"
+@bot.message_handler(func=lambda message: message.text == "Да")
+def group_captain(massage):
+    #добавить в бд "Student"
 
 
 @bot.message_handler(content_types=['text'])
