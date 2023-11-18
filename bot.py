@@ -5,7 +5,7 @@ import models as md
 import re
 # import menu
 
-token = ""
+token = "6398606477:AAEIIC64vT5WqQrgoDnaaIuc6NM_694F3RA"
 bot = telebot.TeleBot(token)
 
 global menu
@@ -77,7 +77,10 @@ def group(message):
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
     if message.text == "Расписание":
-        bot.send_message(message.from_user.id, menu.show_schedule())
+        if menu.show_schedule != []:
+            bot.send_message(message.from_user.id, menu.show_schedule())
+        else:
+            bot.send_message(message.from_user.id, "Рассписания нету")
 
     elif message.text == "/help":
         bot.send_message(message.from_user.id,
@@ -88,7 +91,7 @@ def get_text_messages(message):
                          "Просмотр или добавление ДЗ?", reply_markup=homework_mark)
 
     elif message.text == "Добавление дз":
-        bot.send_message(message.from_user.id, """Введите ДЗ: Предмет: Дата;
+        bot.send_message(message.from_user.id, """Введите ДЗ в формате: Предмет: Дата(ГГ:ММ:ДД);
                          Само задание""", reply_markup=menu_mark)
         bot.register_next_step_handler(message, get_homework)
 
@@ -139,12 +142,12 @@ def get_subject(message):
 
 def get_group(message):
     group = message.text
-    menu = mn.Menu(group_name=group)
-    bot.send_message(message.from_user.id, text="Группа добавлена",
-                     reply_markup=menu_mark)
-    bot.send_message(message.from_user.id, group)
-    menu.add_student(nickname=message.from_user.username)
-    print(message.from_user.username)
+    # menu = mn.Menu(group_name=group)
+    # bot.send_message(message.from_user.id, text="Группа добавлена",
+    #                  reply_markup=menu_mark)
+    # bot.send_message(message.from_user.id, group)
+    # menu.add_student(nickname=message.from_user.username)
+    # print(message.from_user.username)
 
 
 bot.polling(none_stop=True, interval=0)
