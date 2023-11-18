@@ -1,32 +1,36 @@
 import re
 from datetime import datetime
-from models import *
+import models as md
 
 
 class Menu:
     def __init__(self, group_name: str):
-        if not Group.select().where(Group.name == group_name).exists():
-            self.__group = Group.create(
+        if not md.Group.select().where(md.Group.name == group_name).exists():
+            self.__group = md.Group.create(
                 name=group_name
             )
         else:
-            self.__group = Group.get(name=group_name)
+            self.__group = md.Group.get(name=group_name)
 
-    def add_student(self, nickname: str):
-        try:
-            student = Student.get(nickname=nickname)
-        except Student.DoesNotExist:
-            student = Student.create(  # Так делать нельзя
+    def get_or_add_student(self, nickname: str):
+        student = md.Student.get_or_none(nickname=nickname)
+        if not student:
+            student = md.Student.create(
                 nickname=nickname,
                 group=self.__group,
             )
-        return student.nickname
+        return student
+
+    def get_group(self, student_nickname: str):
+        student = md.Student.get(nickname=student_nickname)
+        group = student.group
+        return group
 
     def add_schedule(self, input_schedule: str):
         schedule = {}
         current_day = None
-        # Комменты к регуляркам нада
         pattern = re.compile(r'(\w+):$|([\w\s]+), (\d+), (\d+\.\d+);')
+
         for line in input_schedule.split('\n'):
             match = pattern.match(line)
             if match:
@@ -41,7 +45,7 @@ class Menu:
                     time = float(match.group(4))
                     time_str = f'{int(time):02d}:{int((time % 1) * 60):02d}'
                     formatted_time = datetime.strptime(time_str, "%H:%M")
-                    Subject.create(
+                    md.Subject.create(
                         name=subject,
                         week_day=current_day,
                         auditorium=auditorium,
@@ -66,7 +70,10 @@ class Menu:
         self.__group.save()
 
     def show_schedule(self):
-        return self.__group.schedule
+        if self.__group.schedule is not None:
+            return self.__group.schedule
+        else:
+            return "Расписание отсутствует"
 
     def add_homework(self, text: str):
         pattern = re.compile(r'(.+): (\d{4}\.\d{2}\.\d{2});\n(.+)')
@@ -80,38 +87,36 @@ class Menu:
         weekdays = ['Понедельник', 'Вторник', 'Среда',
                     'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
         weekday = weekdays[weekday_number]
-        subject = Subject.get(
-            name=subject_name, week_day=weekday, group=self.__group)
+        subject = md.Subject.get_or_none(
+            name=subject_name, group=self.__group)
+        # if not subject:
+        #     return 0
         time_deadline = subject.time
         datetime_deadline = datetime.combine(
             date_deadline.date(), time_deadline)
-        try:
-            homework = Homework.get(
-                group=self.__group,
-                deadline=datetime_deadline,
-                subject=subject
-            )
-        except Homework.DoesNotExist:
-            homework = Homework.create(
-                group=self.__group,
-                task=task,
-                deadline=datetime_deadline,
-                subject=subject
-            )
+        homework = md.Homework.create(
+            group=self.__group,
+            task=task,
+            deadline=datetime_deadline,
+            subject=subject
+        )
 
         return parsed_data
 
     def show_homework(self):
         today = datetime.now().date()
         homeworks = (
-            Homework.select()
-            .join(Subject)
-            .join(Group)
-            .where(Group.id == self.__group.id)
-            .where((Homework.deadline > today) |
-                   ((Homework.deadline == today) & (Homework.deadline > datetime.now().time())))
-            .order_by(Homework.deadline)
+            md.Homework.select()
+            .join(md.Subject)
+            .join(md.Group)
+            .where(md.Group.id == self.__group.id)
+            .where((md.Homework.deadline > today) |
+                   ((md.Homework.deadline == today) & (md.Homework.deadline > datetime.now().time())))
+            .order_by(md.Homework.deadline)
         )
+
+        if not homeworks:
+            return 'Домашнего задания пока что нет'
 
         formatted_homeworks = []
         for homework in homeworks:
@@ -125,7 +130,3 @@ class Menu:
     def show_students(self):
         for student in self.__group.students:
             yield student
-# Сделать не один мега класс, а отдельные по умл и исользовать menu как конекктор
-# Поменять УМЛ
-# Паттерны продумать
-# SOLID

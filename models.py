@@ -31,7 +31,7 @@ class Subject(BaseModel):
 
     name = CharField()
     week_day = CharField()
-    auditorium = CharField()
+    auditorium = CharField(null=True)
     time = TimeField()
     group = ForeignKeyField(Group)
 
